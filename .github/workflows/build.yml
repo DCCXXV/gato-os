@@ -1,33 +1,34 @@
 name: Build Gato OS
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 0"
+    push:
+        branches:
+            - main
+    pull_request:
+    workflow_dispatch:
+    schedule:
+        - cron: "0 0 * * 0"
 
 env:
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-  IMAGE_NAME: gato-os
+    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+    IMAGE_NAME: gato-os
 
 jobs:
-  build:
-    name: Build and Push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    build:
+        name: Build and Push
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Build image
-        uses: blue-build/github-action@v1.6
-        with:
-          recipe: recipe.yml
-          registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
+            - name: Build image
+              uses: blue-build/github-action@v1.6
+              with:
+                  recipe: recipe.yml
+                  registry_token: ${{ github.token }}
+                  pr_event_number: ${{ github.event.number }}
+                  cosign_private_key: ${{ secrets.SIGNING_SECRET }}
