@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(./gato f:*)",
+      "Bash(tree:*)",
+      "WebSearch",
+      "Bash(cat:*)",
+      "WebFetch(domain:blue-build.org)"
+    ]
+  }
+}

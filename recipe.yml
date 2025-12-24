@@ -1,0 +1,64 @@
+name: gato-os
+description: Gato OS - A very WIP distro that will feel like magic.
+base-image: quay.io/fedora-ostree-desktops/cosmic-atomic
+image-version: 43
+
+modules:
+    - type: files
+      files:
+          - source: theming
+            destination: /usr/share/gato/theming
+          - source: gato-daemon.service
+            destination: /usr/lib/systemd/user/gato-daemon.service
+
+    - type: containerfile
+      snippets:
+          # Install COSMIC theme
+          - RUN mkdir -p /usr/share/cosmic/themes && cp /tmp/files/theming/gato-dark.ron /usr/share/cosmic/themes/
+
+    - type: rpm-ostree
+      repos:
+          - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-43/atim-starship-fedora-43.repo
+      install:
+          - git
+          - golang
+          - podman
+          - distrobox
+          - htop
+          - btop
+          - ripgrep
+          - fd-find
+          - bat
+          - eza
+          - starship
+          - fzf
+          - zoxide
+          - ffmpeg
+          - ImageMagick
+          - curl
+          - wget
+          - jq
+      remove:
+          - firefox
+
+    - type: containerfile
+      snippets:
+          # Build gato from source
+          - COPY gato-daemon /tmp/gato-build
+          - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
+          # Install Helium browser (AppImage)
+          - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/latest/download/helium-x86_64.AppImage && chmod +x /usr/bin/helium
+          - RUN mkdir -p /usr/share/applications && echo '[Desktop Entry]\nName=Helium\nExec=/usr/bin/helium %U\nIcon=helium\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;' > /usr/share/applications/helium.desktop
+
+    - type: default-flatpaks
+      notify: true
+      system:
+          repo-url: https://dl.flathub.org/repo/flathub.flatpakrepo
+          repo-name: flathub
+          install:
+              - dev.zed.Zed
+              - org.videolan.VLC
+              - org.gnome.Loupe
+              - com.github.tchx84.Flatseal
+              - org.mozilla.firefox
+              - it.mijorus.gearlever

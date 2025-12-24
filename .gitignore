@@ -1,0 +1,27 @@
+# Binaries
+gato-daemon/gato
+gato-daemon/gato-daemon
+*.exe
+*.so
+
+# Go
+*.test
+*.out
+go.work
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+
+# Build
+build/
+dist/
+*.log
+tmp/
+.bluebuild-scripts_*
