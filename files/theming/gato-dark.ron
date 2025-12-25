@@ -233,9 +233,9 @@
         blue: 0.84265095,
     )),
     accent: Some((
-        red: 0.6962025,
-        green: 0.33520862,
-        blue: 0.33520862,
+        red: 1.0,
+        green: 0.47843134,
+        blue: 0.47843134,
     )),
     success: Some((
         red: 0.57254905,
@@ -254,6 +254,6 @@
     )),
     is_frosted: false,
     gaps: (0, 5),
-    active_hint: 2,
+    active_hint: 1,
     window_hint: None,
 )

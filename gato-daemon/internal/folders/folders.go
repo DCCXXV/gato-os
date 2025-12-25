@@ -16,12 +16,12 @@ import (
 
 // FolderAction defines what happens when a file is added to a folder
 type FolderAction struct {
-	Path        string   `toml:"path"`
-	Action      string   `toml:"action"`      // predefined: compress, convert-mp4, convert-webp, etc.
-	Command     string   `toml:"command"`     // custom command, {} = filename
-	Extensions  []string `toml:"extensions"`  // only process these extensions (empty = all)
-	Notify      bool     `toml:"notify"`
-	KeepOriginal bool    `toml:"keep_original"`
+	Path         string   `toml:"path"`
+	Action       string   `toml:"action"`     // predefined: compress, convert-mp4, convert-webp, etc.
+	Command      string   `toml:"command"`    // custom command, {} = filename
+	Extensions   []string `toml:"extensions"` // only process these extensions (empty = all)
+	Notify       bool     `toml:"notify"`
+	KeepOriginal bool     `toml:"keep_original"`
 }
 
 // Config holds all folder configurations

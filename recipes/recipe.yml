@@ -8,13 +8,29 @@ modules:
       files:
           - source: theming
             destination: /usr/share/gato/theming
+          - source: wallpapers
+            destination: /usr/share/backgrounds/gato
           - source: gato-daemon.service
             destination: /usr/lib/systemd/user/gato-daemon.service
 
     - type: containerfile
       snippets:
           # Install COSMIC theme
-          - RUN mkdir -p /usr/share/cosmic/themes && cp /tmp/files/theming/gato-dark.ron /usr/share/cosmic/themes/
+          - RUN mkdir -p /usr/share/cosmic/themes && cp /usr/share/gato/theming/gato-dark.ron /usr/share/cosmic/themes/
+          # Set wallpaper
+          - |
+              RUN mkdir -p /etc/skel/.config/cosmic/com.system76.CosmicBackground/v1 && \
+              cat > /etc/skel/.config/cosmic/com.system76.CosmicBackground/v1/all <<'EOF'
+              (
+                  output: "all",
+                  source: Path("/usr/share/backgrounds/gato/gato-wp2.png"),
+                  filter_by_theme: true,
+                  rotation_frequency: 300,
+                  filter_method: Lanczos,
+                  scaling_mode: Zoom,
+                  sampling_method: Alphanumeric,
+              )
+              EOF
 
     - type: rpm-ostree
       repos:
@@ -29,20 +45,22 @@ modules:
           - ripgrep
           - fd-find
           - bat
-          - eza
           - starship
           - fzf
           - zoxide
-          - ffmpeg
           - ImageMagick
           - curl
           - wget
           - jq
       remove:
           - firefox
+          - firefox-langpacks
 
     - type: containerfile
       snippets:
+          # Install RPM Fusion repos and full ffmpeg
+          - RUN rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm
+          - RUN rpm-ostree override remove ffmpeg-free libavcodec-free libavdevice-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install=ffmpeg
           # Build gato from source
           - COPY gato-daemon /tmp/gato-build
           - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
@@ -51,14 +69,15 @@ modules:
           - RUN mkdir -p /usr/share/applications && echo '[Desktop Entry]\nName=Helium\nExec=/usr/bin/helium %U\nIcon=helium\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;' > /usr/share/applications/helium.desktop
 
     - type: default-flatpaks
-      notify: true
-      system:
-          repo-url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          repo-name: flathub
-          install:
-              - dev.zed.Zed
-              - org.videolan.VLC
-              - org.gnome.Loupe
-              - com.github.tchx84.Flatseal
-              - org.mozilla.firefox
-              - it.mijorus.gearlever
+      configurations:
+          - notify: true
+            scope: system
+            repo:
+                title: Flathub
+            install:
+                - dev.zed.Zed
+                - org.videolan.VLC
+                - org.gnome.Loupe
+                - com.github.tchx84.Flatseal
+                - org.mozilla.firefox
+                - it.mijorus.gearlever
