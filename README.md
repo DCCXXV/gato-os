@@ -1,6 +1,8 @@
+![](gato-banner.png)
+
 # Gato OS
 
-An elegant WIP distro that will feel like magic. Currently? just half-vibecoded slop while I focus more on the general direction I want + I learn everything I need to to make this a reality.
+An elegant WIP distro that will feel like magic. Currently? just half-vibecoded slop from hell while I focus more on the general direction I want + I learn everything I need to to make this a reality.
 
 ## Installation
 
@@ -34,12 +36,15 @@ gato f ls
 gato f rm ~/Photos
 ```
 
+This will have a GUI too.
+
 ### TO BE DONE
 
 - Auto convert files when changing the extension from anywhere
 - Ghost commands (if the program is not installed run it will run it in an ephemereal container)
 - First class integration with syncthing
 - Small QOL changes for developers (like detecting when you are trying to run something on an used port and launching a cosmic notification telling you which program is using it and more)
+- (very in the future) an android app that merges the functionality of syncthing and kdeconnect.
 
 **Shortcuts:**
 

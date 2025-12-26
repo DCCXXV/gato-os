@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 name: gato-os
 description: Gato OS - A very WIP distro that will feel like magic.
 base-image: quay.io/fedora-ostree-desktops/cosmic-atomic
@@ -13,25 +14,6 @@ modules:
           - source: gato-daemon.service
             destination: /usr/lib/systemd/user/gato-daemon.service
 
-    - type: containerfile
-      snippets:
-          # Install COSMIC theme
-          - RUN mkdir -p /usr/share/cosmic/themes && cp /usr/share/gato/theming/gato-dark.ron /usr/share/cosmic/themes/
-          # Set wallpaper
-          - |
-              RUN mkdir -p /etc/skel/.config/cosmic/com.system76.CosmicBackground/v1 && \
-              cat > /etc/skel/.config/cosmic/com.system76.CosmicBackground/v1/all <<'EOF'
-              (
-                  output: "all",
-                  source: Path("/usr/share/backgrounds/gato/gato-wp2.png"),
-                  filter_by_theme: true,
-                  rotation_frequency: 300,
-                  filter_method: Lanczos,
-                  scaling_mode: Zoom,
-                  sampling_method: Alphanumeric,
-              )
-              EOF
-
     - type: rpm-ostree
       repos:
           - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-43/atim-starship-fedora-43.repo
@@ -41,7 +23,6 @@ modules:
           - podman
           - distrobox
           - htop
-          - btop
           - ripgrep
           - fd-find
           - bat
@@ -56,6 +37,12 @@ modules:
           - firefox
           - firefox-langpacks
 
+    - type: fonts
+      fonts:
+          google-fonts:
+              - Google Sans Flex
+              - Google Sans Code
+
     - type: containerfile
       snippets:
           # Install RPM Fusion repos and full ffmpeg
@@ -66,7 +53,14 @@ modules:
           - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
           # Install Helium browser (AppImage)
           - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/latest/download/helium-x86_64.AppImage && chmod +x /usr/bin/helium
-          - RUN mkdir -p /usr/share/applications && echo '[Desktop Entry]\nName=Helium\nExec=/usr/bin/helium %U\nIcon=helium\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;' > /usr/share/applications/helium.desktop
+          - RUN mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium\nExec=/usr/bin/helium %U\nIcon=helium\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;' > /usr/share/applications/helium.desktop
+          # Enable gato-daemon globally for all users
+          - RUN systemctl --global enable gato-daemon.service
+
+    - type: soar
+      additional-repos: true
+      auto-upgrade: true
+      upgrade-interval: "3h"
 
     - type: default-flatpaks
       configurations:
@@ -81,3 +75,24 @@ modules:
                 - com.github.tchx84.Flatseal
                 - org.mozilla.firefox
                 - it.mijorus.gearlever
+
+    - type: containerfile
+      snippets:
+          # COSMIC conf (Theme + Wallpaper)
+          - |
+              RUN mkdir -p /usr/share/cosmic/themes && \
+                  cp /usr/share/gato/theming/gato-dark.ron /usr/share/cosmic/themes/ && \
+                  mkdir -p /usr/share/cosmic/com.system76.CosmicTheme/v1/ && \
+                  echo '(active: "gato-dark", mode: Dark)' > /usr/share/cosmic/com.system76.CosmicTheme/v1/theme && \
+                  mkdir -p /usr/share/cosmic/com.system76.CosmicBackground/v1/ && \
+                  cat > /usr/share/cosmic/com.system76.CosmicBackground/v1/all <<'EOF'
+                  (
+                      output: "all",
+                      source: Path("/usr/share/backgrounds/gato/gato-wp2.png"),
+                      filter_by_theme: true,
+                      rotation_frequency: 300,
+                      filter_method: Lanczos,
+                      scaling_mode: Zoom,
+                      sampling_method: Alphanumeric,
+                  )
+              EOF

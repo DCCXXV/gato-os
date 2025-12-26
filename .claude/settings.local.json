@@ -6,7 +6,9 @@
       "Bash(tree:*)",
       "WebSearch",
       "Bash(cat:*)",
-      "WebFetch(domain:blue-build.org)"
+      "WebFetch(domain:blue-build.org)",
+      "WebFetch(domain:github.com)",
+      "Bash(ssh:*)"
     ]
   }
 }
