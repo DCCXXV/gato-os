@@ -27,5 +27,26 @@ cat > ~/.config/cosmic/com.system76.CosmicBackground/v1/all <<'EOF'
 )
 EOF
 
+# Set up fonts
+mkdir -p ~/.config/cosmic/com.system76.CosmicTk/v1/
+
+cat > ~/.config/cosmic/com.system76.CosmicTk/v1/interface_font <<'EOF'
+(
+    family: "Google Sans Flex",
+    weight: Normal,
+    stretch: Normal,
+    style: Normal,
+)
+EOF
+
+cat > ~/.config/cosmic/com.system76.CosmicTk/v1/monospace_font <<'EOF'
+(
+    family: "Google Sans Code",
+    weight: Normal,
+    stretch: Normal,
+    style: Normal,
+)
+EOF
+
 # Mark as complete
 touch "$MARKER"

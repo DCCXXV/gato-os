@@ -1,5 +1,5 @@
 use cosmic_config::CosmicConfigEntry;
-use cosmic_theme::ThemeBuilder;
+use cosmic_theme::{Theme, ThemeBuilder};
 use std::env;
 use std::fs;
 
@@ -19,11 +19,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse into ThemeBuilder
     let theme_builder: ThemeBuilder = ron::de::from_str(&theme_content)?;
 
-    // Get the dark theme config (gato-dark is always dark)
-    let config = ThemeBuilder::dark_config()?;
+    // Get the dark theme configs (both builder and theme)
+    let builder_config = ThemeBuilder::dark_config()?;
+    let theme_config = Theme::dark_config()?;
 
-    // Write the theme using the same method cosmic-settings uses
-    theme_builder.write_entry(&config)?;
+    // Write the ThemeBuilder (same as cosmic-settings apply_builder)
+    theme_builder.write_entry(&builder_config)?;
+
+    // Build and write the actual Theme (same as cosmic-settings apply_theme)
+    let theme = theme_builder.build();
+    theme.write_entry(&theme_config)?;
 
     println!("Successfully imported dark theme from {}", theme_path);
 
