@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"os/exec"
+
 	"github.com/veinticinco/gato-daemon/internal/folders"
 )
 
@@ -25,6 +27,17 @@ func main() {
 	}
 
 	log.Printf("Starting gato-daemon v%s", version)
+
+	// Run COSMIC setup on first launch (only if not already done)
+	homeDir, _ := os.UserHomeDir()
+	markerFile := homeDir + "/.config/gato-cosmic-setup-done"
+	if _, err := os.Stat(markerFile); os.IsNotExist(err) {
+		if _, err := os.Stat("/usr/bin/gato-cosmic-setup"); err == nil {
+			if err := exec.Command("/usr/bin/gato-cosmic-setup").Run(); err != nil {
+				log.Printf("Warning: COSMIC setup failed: %v", err)
+			}
+		}
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

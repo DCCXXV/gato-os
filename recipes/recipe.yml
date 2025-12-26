@@ -13,6 +13,8 @@ modules:
             destination: /usr/share/backgrounds/gato
           - source: gato-daemon.service
             destination: /usr/lib/systemd/user/gato-daemon.service
+          - source: gato-cosmic-setup.sh
+            destination: /usr/bin/gato-cosmic-setup
 
     - type: rpm-ostree
       repos:
@@ -51,11 +53,21 @@ modules:
           # Build gato from source
           - COPY gato-daemon /tmp/gato-build
           - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
+          # Make COSMIC setup script executable and enable daemon
+          - RUN chmod +x /usr/bin/gato-cosmic-setup
+          - RUN systemctl --global enable gato-daemon.service
+
+    - type: containerfile
+      snippets:
           # Install Helium browser (AppImage)
           - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/latest/download/helium-x86_64.AppImage && chmod +x /usr/bin/helium
-          - RUN mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium\nExec=/usr/bin/helium %U\nIcon=helium\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;' > /usr/share/applications/helium.desktop
-          # Enable gato-daemon globally for all users
-          - RUN systemctl --global enable gato-daemon.service
+          # Create desktop entry
+          - RUN mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium Browser\nExec=/usr/bin/helium %U\nIcon=helium-browser\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;\nComment=Privacy-focused Chromium-based browser' > /usr/share/applications/helium.desktop
+          # Extract and install icon from AppImage
+          - RUN /usr/bin/helium --appimage-extract usr/share/icons/hicolor/256x256/apps/helium.png 2>/dev/null || true && \
+            mkdir -p /usr/share/icons/hicolor/256x256/apps && \
+            mv squashfs-root/usr/share/icons/hicolor/256x256/apps/helium.png /usr/share/icons/hicolor/256x256/apps/helium-browser.png 2>/dev/null || true && \
+            rm -rf squashfs-root
 
     - type: soar
       additional-repos: true
