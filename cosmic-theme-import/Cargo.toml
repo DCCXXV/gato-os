@@ -1,0 +1,9 @@
+[package]
+name = "cosmic-theme-import"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cosmic-config = { git = "https://github.com/pop-os/libcosmic" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic" }
+ron = "0.8"

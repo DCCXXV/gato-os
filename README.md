@@ -62,9 +62,10 @@ This will have a GUI too.
 
 ## Apps
 
-- **Browser**: Helium
+- **Browser**: Firefox
 - **Editor**: Zed
 - **Media**: VLC, Loupe
+- **AppImage Manager**: Gear Lever
 - **Theme**: Gato Dark (COSMIC)
 
 ## Building

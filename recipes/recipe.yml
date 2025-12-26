@@ -8,7 +8,7 @@ modules:
     - type: files
       files:
           - source: theming
-            destination: /usr/share/gato/theming
+            destination: /usr/share/cosmic/themes
           - source: wallpapers
             destination: /usr/share/backgrounds/gato
           - source: gato-daemon.service
@@ -22,6 +22,8 @@ modules:
       install:
           - git
           - golang
+          - rust
+          - cargo
           - podman
           - distrobox
           - htop
@@ -50,18 +52,18 @@ modules:
           # Install RPM Fusion repos and full ffmpeg
           - RUN rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm
           - RUN rpm-ostree override remove ffmpeg-free libavcodec-free libavdevice-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install=ffmpeg
-          # Build gato from source
+          # Build gato from source (Go)
           - COPY gato-daemon /tmp/gato-build
           - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
+          # Build cosmic-theme-import (Rust)
+          - COPY cosmic-theme-import /tmp/theme-import
+          - RUN cd /tmp/theme-import && cargo build --release && cp target/release/cosmic-theme-import /usr/bin/ && rm -rf /tmp/theme-import
+          # Remove default wallpapers, keep only Gato wallpapers
+          - RUN find /usr/share/backgrounds -mindepth 1 -maxdepth 1 ! -name 'gato' -exec rm -rf {} +
           # Make COSMIC setup script executable and enable daemon
           - RUN chmod +x /usr/bin/gato-cosmic-setup
           - RUN systemctl --global enable gato-daemon.service
 
-    - type: containerfile
-      snippets:
-          # Install Helium browser (AppImage)
-          - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/download/0.7.7.1/helium-0.7.7.1-x86_64.AppImage && chmod +x /usr/bin/helium
-          - RUN /usr/bin/mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium Browser\nExec=/usr/bin/helium %U\nIcon=web-browser\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;\nComment=Privacy-focused Chromium-based browser' > /usr/share/applications/helium.desktop
 
     - type: soar
       additional-repos: true
@@ -82,23 +84,3 @@ modules:
                 - org.mozilla.firefox
                 - it.mijorus.gearlever
 
-    - type: containerfile
-      snippets:
-          # COSMIC conf (Theme + Wallpaper)
-          - |
-              RUN mkdir -p /usr/share/cosmic/themes && \
-                  cp /usr/share/gato/theming/gato-dark.ron /usr/share/cosmic/themes/ && \
-                  mkdir -p /usr/share/cosmic/com.system76.CosmicTheme/v1/ && \
-                  echo '(active: "gato-dark", mode: Dark)' > /usr/share/cosmic/com.system76.CosmicTheme/v1/theme && \
-                  mkdir -p /usr/share/cosmic/com.system76.CosmicBackground/v1/ && \
-                  cat > /usr/share/cosmic/com.system76.CosmicBackground/v1/all <<'EOF'
-                  (
-                      output: "all",
-                      source: Path("/usr/share/backgrounds/gato/gato-wp2.png"),
-                      filter_by_theme: true,
-                      rotation_frequency: 300,
-                      filter_method: Lanczos,
-                      scaling_mode: Zoom,
-                      sampling_method: Alphanumeric,
-                  )
-              EOF

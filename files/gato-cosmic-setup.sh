@@ -8,14 +8,10 @@ if [ -f "$MARKER" ]; then
     exit 0
 fi
 
-# Set up COSMIC theme
-mkdir -p ~/.local/share/cosmic/themes
-if [ -f /usr/share/cosmic/themes/gato-dark.ron ]; then
-    cp /usr/share/cosmic/themes/gato-dark.ron ~/.local/share/cosmic/themes/
+# Import Gato Dark theme
+if [ -f /usr/share/cosmic/themes/gato-dark.ron ] && [ -x /usr/bin/cosmic-theme-import ]; then
+    /usr/bin/cosmic-theme-import /usr/share/cosmic/themes/gato-dark.ron
 fi
-
-mkdir -p ~/.config/cosmic/com.system76.CosmicTheme/v1/
-echo '(active: "gato-dark", mode: Dark)' > ~/.config/cosmic/com.system76.CosmicTheme/v1/theme
 
 # Set up COSMIC wallpaper
 mkdir -p ~/.config/cosmic/com.system76.CosmicBackground/v1/
