@@ -60,14 +60,8 @@ modules:
     - type: containerfile
       snippets:
           # Install Helium browser (AppImage)
-          - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/latest/download/helium-x86_64.AppImage && chmod +x /usr/bin/helium
-          # Create desktop entry
-          - RUN mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium Browser\nExec=/usr/bin/helium %U\nIcon=helium-browser\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;\nComment=Privacy-focused Chromium-based browser' > /usr/share/applications/helium.desktop
-          # Extract and install icon from AppImage
-          - RUN /usr/bin/helium --appimage-extract usr/share/icons/hicolor/256x256/apps/helium.png 2>/dev/null || true && \
-            mkdir -p /usr/share/icons/hicolor/256x256/apps && \
-            mv squashfs-root/usr/share/icons/hicolor/256x256/apps/helium.png /usr/share/icons/hicolor/256x256/apps/helium-browser.png 2>/dev/null || true && \
-            rm -rf squashfs-root
+          - RUN curl -L -o /usr/bin/helium https://github.com/imputnet/helium-linux/releases/download/0.7.7.1/helium-0.7.7.1-x86_64.AppImage && chmod +x /usr/bin/helium
+          - RUN /usr/bin/mkdir -p /usr/share/applications && echo -e '[Desktop Entry]\nName=Helium Browser\nExec=/usr/bin/helium %U\nIcon=web-browser\nType=Application\nCategories=Network;WebBrowser;\nMimeType=text/html;text/xml;application/xhtml+xml;\nComment=Privacy-focused Chromium-based browser' > /usr/share/applications/helium.desktop
 
     - type: soar
       additional-repos: true
