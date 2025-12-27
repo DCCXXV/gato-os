@@ -15,28 +15,29 @@ An elegant WIP distro that will feel like magic. Currently? just half-vibecoded 
 
 ## Features
 
-### Intelligent Folders
+### Gato Dark Theme
 
-Make any folder automatically process files dropped into it:
+A custom colorscheme with themes for COSMIC and Zed (and more to come!).
+
+### Gato Daemon & CLI
+
+**Intelligent Folders** - Automatically process files dropped into designated folders:
 
 ```bash
-# Compress images (default)
-gato f a ~/Photos -k
-
-# Convert videos to MP4
-gato f a ~/Videos -a convert-mp4
-
-# Custom command
-gato f a ~/Resize -c 'convert {} -resize 50% {}'
-
-# List configured folders
-gato f ls
-
-# Remove
-gato f rm ~/Photos
+gato f a ~/Photos -k              # Compress images (keep original)
+gato f a ~/Videos -a convert-mp4  # Convert to MP4
+gato f a ~/Resize -c 'convert {} -resize 50% {}'  # Custom command
+gato f ls                         # List configured folders
+gato f rm ~/Photos                # Remove folder
 ```
 
-This will have a GUI too.
+**Available actions:** `compress`, `convert-webp`, `convert-mp4`, `convert-mp3`, `resize-50`, `resize-25`
+
+The CLI will have a GUI too.
+
+### Soar Integration
+
+Uses [Soar](https://github.com/pkgforge/soar) for package management with automatic upgrades every 3 hours.
 
 ### TO BE DONE
 
@@ -46,23 +47,9 @@ This will have a GUI too.
 - Small QOL changes for developers (like detecting when you are trying to run something on an used port and launching a cosmic notification telling you which program is using it and more)
 - (very in the future) an android app that merges the functionality of syncthing and kdeconnect.
 
-**Shortcuts:**
-
-- `gato f` = `gato folder`
-- `a` = `add`, `rm` = `remove`, `ls` = `list`
-- `-a` = `--action`, `-c` = `--cmd`, `-k` = `--keep-original`, `-e` = `--ext`
-
-**Actions:**
-
-- `compress` - Compress images (PNG, JPG, WebP)
-- `convert-webp` - Convert to WebP
-- `convert-mp4` - Convert videos to MP4
-- `convert-mp3` - Convert audio to MP3
-- `resize-50` / `resize-25` - Resize images
-
 ## Apps
 
-- **Browser**: Firefox
+- **Browser**: Helium
 - **Editor**: Zed
 - **Media**: VLC, Loupe
 - **AppImage Manager**: Gear Lever

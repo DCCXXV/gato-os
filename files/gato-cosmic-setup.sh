@@ -48,5 +48,12 @@ cat > ~/.config/cosmic/com.system76.CosmicTk/v1/monospace_font <<'EOF'
 )
 EOF
 
+# Set dock/panel border radius to match theme (2px)
+mkdir -p ~/.config/cosmic/com.system76.CosmicPanel.Dock/v1/
+echo "2" > ~/.config/cosmic/com.system76.CosmicPanel.Dock/v1/border_radius
+
+mkdir -p ~/.config/cosmic/com.system76.CosmicPanel.Panel/v1/
+echo "2" > ~/.config/cosmic/com.system76.CosmicPanel.Panel/v1/border_radius
+
 # Mark as complete
 touch "$MARKER"

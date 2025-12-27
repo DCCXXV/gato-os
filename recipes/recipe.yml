@@ -52,6 +52,16 @@ modules:
           # Install RPM Fusion repos and full ffmpeg
           - RUN rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm
           - RUN rpm-ostree override remove ffmpeg-free libavcodec-free libavdevice-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install=ffmpeg
+          # Add Helium browser repo (unofficial community package)
+          - |
+              RUN cat > /etc/yum.repos.d/helium.repo <<'EOF'
+              [helium]
+              name=Helium Browser
+              baseurl=https://arvaidasre.github.io/helium-browser-deb/rpm/$basearch
+              enabled=1
+              gpgcheck=0
+              EOF
+          - RUN rpm-ostree install helium-browser
           # Build gato from source (Go)
           - COPY gato-daemon /tmp/gato-build
           - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
