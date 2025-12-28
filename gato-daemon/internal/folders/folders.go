@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -31,9 +32,11 @@ type Config struct {
 
 // Manager handles intelligent folders
 type Manager struct {
-	configPath string
-	config     Config
-	watchers   map[string]*fsnotify.Watcher
+	configPath    string
+	config        Config
+	watchers      map[string]*fsnotify.Watcher
+	recentOutputs map[string]time.Time // Track output files to avoid reprocessing
+	outputMu      sync.Mutex
 }
 
 // New creates a new folder manager
@@ -42,8 +45,9 @@ func New() *Manager {
 	configPath := filepath.Join(homeDir, ".config", "gato", "folders.toml")
 
 	return &Manager{
-		configPath: configPath,
-		watchers:   make(map[string]*fsnotify.Watcher),
+		configPath:    configPath,
+		watchers:      make(map[string]*fsnotify.Watcher),
+		recentOutputs: make(map[string]time.Time),
 	}
 }
 
@@ -197,19 +201,77 @@ func (m *Manager) ListFolders() []FolderAction {
 	return m.config.Folders
 }
 
-// Start begins watching all configured folders
+// Start begins watching all configured folders and reloads on config changes
 func (m *Manager) Start(ctx context.Context) error {
 	if err := m.LoadConfig(); err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	if len(m.config.Folders) == 0 {
-		log.Println("No intelligent folders configured. Use 'gato folder add' to add one.")
-		<-ctx.Done()
-		return nil
+	// Watch config file for changes
+	configWatcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("failed to create config watcher: %w", err)
+	}
+	defer configWatcher.Close()
+
+	// Watch the config directory (file watches don't survive file replacements)
+	configDir := filepath.Dir(m.configPath)
+	if err := configWatcher.Add(configDir); err != nil {
+		log.Printf("Warning: cannot watch config for changes: %v", err)
 	}
 
-	// Watch each unique folder path once
+	// Start watching folders
+	m.refreshWatchers(ctx)
+
+	// Main loop
+	for {
+		select {
+		case <-ctx.Done():
+			// Cleanup
+			for _, w := range m.watchers {
+				w.Close()
+			}
+			return nil
+
+		case event, ok := <-configWatcher.Events:
+			if !ok {
+				continue
+			}
+			// Check if our config file changed
+			if filepath.Base(event.Name) == "folders.toml" {
+				if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
+					log.Println("Config changed, reloading...")
+					time.Sleep(100 * time.Millisecond) // Wait for write to complete
+					if err := m.LoadConfig(); err != nil {
+						log.Printf("Failed to reload config: %v", err)
+						continue
+					}
+					m.refreshWatchers(ctx)
+				}
+			}
+
+		case err, ok := <-configWatcher.Errors:
+			if ok {
+				log.Printf("Config watcher error: %v", err)
+			}
+		}
+	}
+}
+
+// refreshWatchers stops old watchers and starts new ones based on current config
+func (m *Manager) refreshWatchers(ctx context.Context) {
+	// Close existing watchers
+	for path, w := range m.watchers {
+		w.Close()
+		delete(m.watchers, path)
+	}
+
+	if len(m.config.Folders) == 0 {
+		log.Println("No intelligent folders configured.")
+		return
+	}
+
+	// Start new watchers
 	for _, path := range m.ListUniqueFolders() {
 		actions := m.GetFolderActions(path)
 		if err := m.watchFolder(ctx, path, actions); err != nil {
@@ -222,14 +284,6 @@ func (m *Manager) Start(ctx context.Context) error {
 		}
 		log.Printf("Watching: %s -> [%s]", path, strings.Join(actionNames, ", "))
 	}
-
-	<-ctx.Done()
-
-	// Cleanup
-	for _, w := range m.watchers {
-		w.Close()
-	}
-	return nil
 }
 
 func (m *Manager) describeAction(f FolderAction) string {
@@ -262,12 +316,25 @@ func (m *Manager) watchFolder(ctx context.Context, path string, actions []Folder
 					return
 				}
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					// Wait for file to be fully written
-					time.Sleep(500 * time.Millisecond)
-					// Process through all actions
-					for _, action := range actions {
-						m.processFile(event.Name, action)
+					filePath := event.Name
+
+					// Check if this is a recent output file (avoid reprocessing)
+					m.outputMu.Lock()
+					if t, exists := m.recentOutputs[filePath]; exists && time.Since(t) < 10*time.Second {
+						m.outputMu.Unlock()
+						continue
 					}
+					m.outputMu.Unlock()
+
+					// Process in goroutine for parallel handling
+					go func(filePath string, actions []FolderAction) {
+						// Wait for file to be fully written
+						time.Sleep(500 * time.Millisecond)
+						// Process through all actions
+						for _, action := range actions {
+							m.processFile(filePath, action)
+						}
+					}(filePath, actions)
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -355,7 +422,34 @@ func (m *Manager) runCustomCommand(filePath, command string) error {
 	cmd = strings.ReplaceAll(cmd, "{ext}", ext)
 	cmd = strings.ReplaceAll(cmd, "{dir}", dir)
 
+	// Mark potential output files to prevent reprocessing
+	// Look for patterns like dir/name.ext in the expanded command
+	m.markOutputFiles(dir, name, command)
+
 	return exec.Command("bash", "-c", cmd).Run()
+}
+
+// markOutputFiles registers potential output files to avoid reprocessing them
+func (m *Manager) markOutputFiles(dir, name, command string) {
+	// Common output extensions from the command
+	extensions := []string{".webp", ".png", ".jpg", ".jpeg", ".mp4", ".mp3", ".gif", ".mov", ".avi", ".mkv"}
+
+	m.outputMu.Lock()
+	defer m.outputMu.Unlock()
+
+	for _, ext := range extensions {
+		if strings.Contains(command, ext) {
+			outputPath := filepath.Join(dir, name+ext)
+			m.recentOutputs[outputPath] = time.Now()
+		}
+	}
+
+	// Cleanup old entries (older than 30 seconds)
+	for path, t := range m.recentOutputs {
+		if time.Since(t) > 30*time.Second {
+			delete(m.recentOutputs, path)
+		}
+	}
 }
 
 func (m *Manager) runPredefinedAction(filePath, action string) error {

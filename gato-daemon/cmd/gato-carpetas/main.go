@@ -31,15 +31,15 @@ var (
 var presetOrder = []string{"Compress", "WebP", "MP4", "MP3", "Resize 50%", "Resize 25%", "PNG", "JPG", "Optimize PNG", "GIF"}
 var presets = map[string]string{
 	"Compress":     "convert {} -strip -quality 75 {}",
-	"WebP":         "convert {} {name}.webp && rm {}",
-	"PNG":          "convert {} {name}.png && rm {}",
-	"JPG":          "convert {} -quality 85 {name}.jpg && rm {}",
+	"WebP":         "convert {} {dir}/{name}.webp && rm {}",
+	"PNG":          "convert {} {dir}/{name}.png && rm {}",
+	"JPG":          "convert {} -quality 85 {dir}/{name}.jpg && rm {}",
 	"Optimize PNG": "pngquant --force --quality=65-80 --output {} {}",
 	"Resize 50%":   "convert {} -resize 50% {}",
 	"Resize 25%":   "convert {} -resize 25% {}",
-	"MP4":          "ffmpeg -i {} -c:v libx264 -c:a aac -y {name}.mp4 && rm {}",
-	"MP3":          "ffmpeg -i {} -c:a libmp3lame -q:a 2 -y {name}.mp3 && rm {}",
-	"GIF":          "ffmpeg -i {} -vf 'fps=10,scale=480:-1' -y {name}.gif && rm {}",
+	"MP4":          "ffmpeg -i {} -c:v libx264 -c:a aac -y {dir}/{name}.mp4 && rm {}",
+	"MP3":          "ffmpeg -i {} -c:a libmp3lame -q:a 2 -y {dir}/{name}.mp3 && rm {}",
+	"GIF":          "ffmpeg -i {} -vf 'fps=10,scale=480:-1' -y {dir}/{name}.gif && rm {}",
 }
 
 type gatoTheme struct{}
@@ -254,24 +254,11 @@ func main() {
 		addLabel := canvas.NewText("Add command", dim)
 		addLabel.TextSize = 11
 
-		hint := canvas.NewText("{} = file, {name} = filename, {ext} = extension", dim)
+		hint := canvas.NewText("{} = file, {dir} = folder, {name} = name, {ext} = ext", dim)
 		hint.TextSize = 10
 
 		cmdEntry := widget.NewEntry()
 		cmdEntry.SetPlaceHolder("convert {} -resize 50% {}")
-
-		addBtn := widget.NewButton("Add", func() {
-			cmd := strings.TrimSpace(cmdEntry.Text)
-			if cmd == "" {
-				return
-			}
-			mgr.AddFolder(path, "", cmd, nil, false)
-			cmdEntry.SetText("")
-			showFolderConfig(path)
-		})
-		addBtn.Importance = widget.HighImportance
-
-		cmdRow := container.NewBorder(nil, nil, nil, addBtn, cmdEntry)
 
 		// Presets as small buttons in a grid
 		presetsLabel := canvas.NewText("Presets", dim)
@@ -289,7 +276,18 @@ func main() {
 		}
 		presetsGrid := container.NewGridWithColumns(5, presetBtns...)
 
-		// Remove folder button
+		// Bottom buttons
+		addBtn := widget.NewButton("Add", func() {
+			cmd := strings.TrimSpace(cmdEntry.Text)
+			if cmd == "" {
+				return
+			}
+			mgr.AddFolder(path, "", cmd, nil, false)
+			cmdEntry.SetText("")
+			showFolderConfig(path)
+		})
+		addBtn.Importance = widget.HighImportance
+
 		removeBtn := widget.NewButton("Remove folder", func() {
 			mgr.RemoveFolder(path)
 			showFolderList()
@@ -301,16 +299,18 @@ func main() {
 		sep2 := canvas.NewLine(border)
 		sep2.StrokeWidth = 1
 
+		bottomRow := container.NewGridWithColumns(2, removeBtn, addBtn)
+
 		content := container.NewBorder(
 			container.NewVBox(header, sep1),
-			container.NewVBox(sep2, removeBtn),
+			container.NewVBox(sep2, bottomRow),
 			nil, nil,
 			container.NewVBox(
 				commandsBox,
 				layout.NewSpacer(),
 				addLabel,
 				hint,
-				cmdRow,
+				cmdEntry,
 				presetsLabel,
 				presetsGrid,
 			),
