@@ -66,6 +66,8 @@ func cmdAdd(mgr *folders.Manager, args []string) {
 	fs.Usage = func() {
 		fmt.Println("Usage: gato folder add <path> [flags]")
 		fmt.Println()
+		fmt.Println("Add an action to a folder. Multiple actions can be added to the same folder.")
+		fmt.Println()
 		fmt.Println("Flags:")
 		fs.PrintDefaults()
 		fmt.Println()
@@ -79,6 +81,7 @@ func cmdAdd(mgr *folders.Manager, args []string) {
 		fmt.Println()
 		fmt.Println("Examples:")
 		fmt.Println("  gato f a ~/Photos -a compress -k")
+		fmt.Println("  gato f a ~/Photos -a convert-webp    # add another action")
 		fmt.Println("  gato folder add ~/Videos --action convert-mp4")
 		fmt.Println("  gato f a ~/Custom -c 'convert {} -resize 800x600 {}'")
 	}
@@ -109,7 +112,7 @@ func cmdAdd(mgr *folders.Manager, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("✓ Added: %s\n", path)
+	fmt.Printf("Added: %s\n", path)
 	if *cmd != "" {
 		fmt.Printf("  Command: %s\n", *cmd)
 	} else {
@@ -133,12 +136,12 @@ func cmdRemove(mgr *folders.Manager, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("✓ Removed: %s\n", args[0])
+	fmt.Printf("Removed: %s\n", args[0])
 }
 
 func cmdList(mgr *folders.Manager) {
-	list := mgr.ListFolders()
-	if len(list) == 0 {
+	paths := mgr.ListUniqueFolders()
+	if len(paths) == 0 {
 		fmt.Println("No intelligent folders configured.")
 		fmt.Println()
 		fmt.Println("Add one:")
@@ -148,18 +151,22 @@ func cmdList(mgr *folders.Manager) {
 
 	fmt.Println("Intelligent folders:")
 	fmt.Println()
-	for _, f := range list {
-		fmt.Printf("  %s\n", f.Path)
-		if f.Command != "" {
-			fmt.Printf("    cmd: %s\n", f.Command)
-		} else {
-			fmt.Printf("    action: %s\n", f.Action)
-		}
-		if len(f.Extensions) > 0 {
-			fmt.Printf("    ext: %s\n", strings.Join(f.Extensions, ","))
-		}
-		if f.KeepOriginal {
-			fmt.Printf("    keep-original: yes\n")
+	for _, path := range paths {
+		fmt.Printf("  %s\n", path)
+		actions := mgr.GetFolderActions(path)
+		for _, f := range actions {
+			if f.Command != "" {
+				fmt.Printf("    → cmd: %s", f.Command)
+			} else {
+				fmt.Printf("    → %s", f.Action)
+			}
+			if len(f.Extensions) > 0 {
+				fmt.Printf(" [%s]", strings.Join(f.Extensions, ","))
+			}
+			if f.KeepOriginal {
+				fmt.Printf(" (keep)")
+			}
+			fmt.Println()
 		}
 	}
 }

@@ -17,6 +17,8 @@ modules:
             destination: /usr/lib/systemd/user/gato-daemon.service
           - source: gato-cosmic-setup.sh
             destination: /usr/bin/gato-cosmic-setup
+          - source: applications/gato-carpetas.desktop
+            destination: /usr/share/applications/gato-carpetas.desktop
 
     - type: rpm-ostree
       repos:
@@ -66,9 +68,10 @@ modules:
               gpgcheck=0
               EOF
           - RUN rpm-ostree install helium-browser
-          # Build gato from source (Go)
+          # Build gato tools from source (Go) - install Fyne deps for gato-carpetas GUI
+          - RUN rpm-ostree install libXxf86vm-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel mesa-libGL-devel
           - COPY gato-daemon /tmp/gato-build
-          - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
+          - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && go build -o /usr/bin/gato-carpetas ./cmd/gato-carpetas && rm -rf /tmp/gato-build
           # Build cosmic-theme-import (Rust)
           - COPY cosmic-theme-import /tmp/theme-import
           - RUN cd /tmp/theme-import && cargo build --release && cp target/release/cosmic-theme-import /usr/bin/ && rm -rf /tmp/theme-import
@@ -80,7 +83,6 @@ modules:
           # Set Gato Plymouth theme
           - RUN plymouth-set-default-theme gato
           - RUN dracut -f --regenerate-all
-
 
     - type: soar
       additional-repos: true
@@ -100,4 +102,3 @@ modules:
                 - com.github.tchx84.Flatseal
                 - org.mozilla.firefox
                 - it.mijorus.gearlever
-

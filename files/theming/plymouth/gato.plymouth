@@ -13,6 +13,7 @@ TitleHorizontalAlignment=.5
 TitleVerticalAlignment=.382
 HorizontalAlignment=.5
 VerticalAlignment=.5
+Watermark=watermark
 WatermarkHorizontalAlignment=.5
 WatermarkVerticalAlignment=.96
 Transition=none

@@ -74,12 +74,18 @@ func (m *Manager) SaveConfig() error {
 	return os.WriteFile(m.configPath, data, 0644)
 }
 
-// AddFolder adds a new intelligent folder
+// AddFolder adds a new action to a folder (allows multiple actions per folder)
 func (m *Manager) AddFolder(path, action, command string, extensions []string, keepOriginal bool) error {
-	// Expand path
+	// Expand ~ to home directory
 	if strings.HasPrefix(path, "~/") {
 		homeDir, _ := os.UserHomeDir()
 		path = filepath.Join(homeDir, path[2:])
+	}
+
+	// Convert to absolute path
+	absPath, err := filepath.Abs(path)
+	if err == nil {
+		path = absPath
 	}
 
 	// Create folder if it doesn't exist
@@ -87,10 +93,10 @@ func (m *Manager) AddFolder(path, action, command string, extensions []string, k
 		return fmt.Errorf("failed to create folder: %w", err)
 	}
 
-	// Check if already exists
+	// Check if this exact action already exists for this path
 	for i, f := range m.config.Folders {
-		if f.Path == path {
-			// Update existing
+		if f.Path == path && f.Action == action && f.Command == command {
+			// Update existing action entry
 			m.config.Folders[i] = FolderAction{
 				Path:         path,
 				Action:       action,
@@ -103,7 +109,7 @@ func (m *Manager) AddFolder(path, action, command string, extensions []string, k
 		}
 	}
 
-	// Add new
+	// Add new action (even if path already has other actions)
 	m.config.Folders = append(m.config.Folders, FolderAction{
 		Path:         path,
 		Action:       action,
@@ -116,20 +122,74 @@ func (m *Manager) AddFolder(path, action, command string, extensions []string, k
 	return m.SaveConfig()
 }
 
-// RemoveFolder removes an intelligent folder
-func (m *Manager) RemoveFolder(path string) error {
+// RemoveAction removes a specific action from a folder
+func (m *Manager) RemoveAction(path, action, command string) error {
 	if strings.HasPrefix(path, "~/") {
 		homeDir, _ := os.UserHomeDir()
 		path = filepath.Join(homeDir, path[2:])
 	}
 
 	for i, f := range m.config.Folders {
-		if f.Path == path {
+		if f.Path == path && f.Action == action && f.Command == command {
 			m.config.Folders = append(m.config.Folders[:i], m.config.Folders[i+1:]...)
 			return m.SaveConfig()
 		}
 	}
-	return fmt.Errorf("folder not found: %s", path)
+	return fmt.Errorf("action not found")
+}
+
+// GetFolderActions returns all actions for a specific folder path
+func (m *Manager) GetFolderActions(path string) []FolderAction {
+	if strings.HasPrefix(path, "~/") {
+		homeDir, _ := os.UserHomeDir()
+		path = filepath.Join(homeDir, path[2:])
+	}
+
+	var actions []FolderAction
+	for _, f := range m.config.Folders {
+		if f.Path == path {
+			actions = append(actions, f)
+		}
+	}
+	return actions
+}
+
+// ListUniqueFolders returns unique folder paths
+func (m *Manager) ListUniqueFolders() []string {
+	seen := make(map[string]bool)
+	var paths []string
+	for _, f := range m.config.Folders {
+		if !seen[f.Path] {
+			seen[f.Path] = true
+			paths = append(paths, f.Path)
+		}
+	}
+	return paths
+}
+
+// RemoveFolder removes all actions for a folder
+func (m *Manager) RemoveFolder(path string) error {
+	if strings.HasPrefix(path, "~/") {
+		homeDir, _ := os.UserHomeDir()
+		path = filepath.Join(homeDir, path[2:])
+	}
+
+	found := false
+	var remaining []FolderAction
+	for _, f := range m.config.Folders {
+		if f.Path != path {
+			remaining = append(remaining, f)
+		} else {
+			found = true
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("folder not found: %s", path)
+	}
+
+	m.config.Folders = remaining
+	return m.SaveConfig()
 }
 
 // ListFolders returns all configured folders
@@ -149,12 +209,18 @@ func (m *Manager) Start(ctx context.Context) error {
 		return nil
 	}
 
-	for _, folder := range m.config.Folders {
-		if err := m.watchFolder(ctx, folder); err != nil {
-			log.Printf("Warning: failed to watch %s: %v", folder.Path, err)
+	// Watch each unique folder path once
+	for _, path := range m.ListUniqueFolders() {
+		actions := m.GetFolderActions(path)
+		if err := m.watchFolder(ctx, path, actions); err != nil {
+			log.Printf("Warning: failed to watch %s: %v", path, err)
 			continue
 		}
-		log.Printf("Watching: %s -> %s", folder.Path, m.describeAction(folder))
+		var actionNames []string
+		for _, a := range actions {
+			actionNames = append(actionNames, m.describeAction(a))
+		}
+		log.Printf("Watching: %s -> [%s]", path, strings.Join(actionNames, ", "))
 	}
 
 	<-ctx.Done()
@@ -173,18 +239,18 @@ func (m *Manager) describeAction(f FolderAction) string {
 	return f.Action
 }
 
-func (m *Manager) watchFolder(ctx context.Context, folder FolderAction) error {
+func (m *Manager) watchFolder(ctx context.Context, path string, actions []FolderAction) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
 
-	if err := watcher.Add(folder.Path); err != nil {
+	if err := watcher.Add(path); err != nil {
 		watcher.Close()
 		return err
 	}
 
-	m.watchers[folder.Path] = watcher
+	m.watchers[path] = watcher
 
 	go func() {
 		for {
@@ -198,7 +264,10 @@ func (m *Manager) watchFolder(ctx context.Context, folder FolderAction) error {
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					// Wait for file to be fully written
 					time.Sleep(500 * time.Millisecond)
-					m.processFile(event.Name, folder)
+					// Process through all actions
+					for _, action := range actions {
+						m.processFile(event.Name, action)
+					}
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
