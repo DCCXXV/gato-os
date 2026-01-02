@@ -19,6 +19,8 @@ modules:
             destination: /usr/bin/gato-cosmic-setup
           - source: applications/gato-carpetas.desktop
             destination: /usr/share/applications/gato-carpetas.desktop
+          - source: gato-carpetas
+            destination: /usr/bin/gato-carpetas
 
     - type: rpm-ostree
       repos:
@@ -68,10 +70,9 @@ modules:
               gpgcheck=0
               EOF
           - RUN rpm-ostree install helium-browser
-          # Build gato tools from source (Go) - install Fyne deps for gato-carpetas GUI
-          - RUN rpm-ostree install libXxf86vm-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel mesa-libGL-devel
+          # Build gato CLI tools from source (Go)
           - COPY gato-daemon /tmp/gato-build
-          - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && go build -o /usr/bin/gato-carpetas ./cmd/gato-carpetas && rm -rf /tmp/gato-build
+          - RUN cd /tmp/gato-build && go build -o /usr/bin/gato ./cmd/gato && go build -o /usr/bin/gato-daemon ./cmd/gato-daemon && rm -rf /tmp/gato-build
           # Build cosmic-theme-import (Rust)
           - COPY cosmic-theme-import /tmp/theme-import
           - RUN cd /tmp/theme-import && cargo build --release && cp target/release/cosmic-theme-import /usr/bin/ && rm -rf /tmp/theme-import

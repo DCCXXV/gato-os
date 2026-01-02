@@ -1,0 +1,349 @@
+[gd_scene load_steps=2 format=3 uid="uid://main"]
+
+[ext_resource type="Script" path="res://Main.gd" id="1"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="HSplit" type="HSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+theme_override_constants/minimum_grab_thickness = 6
+split_offset = 200
+dragger_visibility = 0
+
+[node name="SidebarPanel" type="Control" parent="HSplit"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+
+[node name="SidebarBG" type="ColorRect" parent="HSplit/SidebarPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0392157, 0.113725, 0.12549, 0.960784)
+
+[node name="SidebarBorder" type="ColorRect" parent="HSplit/SidebarPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = -250.0
+offset_bottom = 250.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.101961, 0.227451, 0.243137, 1)
+
+[node name="SidebarMargin" type="MarginContainer" parent="HSplit/SidebarPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 1
+theme_override_constants/margin_bottom = 14
+
+[node name="SidebarVBox" type="VBoxContainer" parent="HSplit/SidebarPanel/SidebarMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="SidebarHeader" type="MarginContainer" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="FoldersLabel" type="Label" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox/SidebarHeader"]
+layout_mode = 2
+text = "FOLDERS"
+theme_override_font_sizes/font_size = 10
+
+[node name="FolderScroll" type="ScrollContainer" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="FolderList" type="VBoxContainer" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox/FolderScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SidebarBottom" type="MarginContainer" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_top = 10
+
+[node name="AddFolderBtn" type="Button" parent="HSplit/SidebarPanel/SidebarMargin/SidebarVBox/SidebarBottom"]
+layout_mode = 2
+text = "+ Add Folder"
+theme_override_font_sizes/font_size = 11
+
+[node name="ContentPanel" type="Control" parent="HSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ContentBG" type="ColorRect" parent="HSplit/ContentPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0196078, 0.0745098, 0.0823529, 1)
+
+[node name="ContentMargin" type="MarginContainer" parent="HSplit/ContentPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="ContentVBox" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="WelcomePanel" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Spacer1" type="Control" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WelcomeTitle" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+text = "Gato Carpetas"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="WelcomeSubtitle" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+text = "Intelligent folder automation for the Gato Operating System"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="Spacer2" type="Control" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="WelcomeHint" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+text = "Select a folder or add a new one"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 11
+
+[node name="Spacer3" type="Control" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/WelcomePanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ConfigPanel" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="Header" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HeaderRow" type="HBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/Header"]
+layout_mode = 2
+
+[node name="FolderName" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/Header/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Folder Name"
+theme_override_font_sizes/font_size = 18
+
+[node name="OpenFolderBtn" type="Button" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/Header/HeaderRow"]
+layout_mode = 2
+text = "Open"
+theme_override_font_sizes/font_size = 11
+
+[node name="FolderPath" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/Header"]
+layout_mode = 2
+text = "/path/to/folder"
+text_overrun_behavior = 3
+theme_override_font_sizes/font_size = 11
+
+[node name="HeaderSep" type="ColorRect" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.101961, 0.227451, 0.243137, 1)
+
+[node name="CommandsSection" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="CommandsLabel" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/CommandsSection"]
+layout_mode = 2
+text = "COMMANDS"
+theme_override_font_sizes/font_size = 10
+
+[node name="CommandsScroll" type="ScrollContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/CommandsSection"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="CommandsList" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/CommandsSection/CommandsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="AddSection" type="VBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AddLabel" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+text = "ADD COMMAND"
+theme_override_font_sizes/font_size = 10
+
+[node name="Hint" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+text = "{} = file    {dir} = folder    {name} = name    {ext} = extension"
+text_overrun_behavior = 3
+theme_override_font_sizes/font_size = 10
+
+[node name="CommandInput" type="LineEdit" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+placeholder_text = "convert {} -resize 50% {}"
+
+[node name="PresetsLabel" type="Label" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+text = "PRESETS"
+theme_override_font_sizes/font_size = 10
+
+[node name="PresetsFlow" type="HFlowContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="ButtonRow" type="HBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SavePresetBtn" type="Button" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection/ButtonRow"]
+layout_mode = 2
+text = "Save Preset"
+theme_override_font_sizes/font_size = 11
+
+[node name="ManagePresetsBtn" type="Button" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection/ButtonRow"]
+layout_mode = 2
+text = "Manage"
+theme_override_font_sizes/font_size = 11
+
+[node name="Spacer" type="Control" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AddBtn" type="Button" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/AddSection/ButtonRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Add Command"
+theme_override_font_sizes/font_size = 12
+
+[node name="FooterSep" type="ColorRect" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.101961, 0.227451, 0.243137, 1)
+
+[node name="Footer" type="HBoxContainer" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel"]
+layout_mode = 2
+
+[node name="RemoveFolderBtn" type="Button" parent="HSplit/ContentPanel/ContentMargin/ContentVBox/ConfigPanel/Footer"]
+layout_mode = 2
+text = "Remove Folder"
+theme_override_font_sizes/font_size = 11
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Select Folder"
+initial_position = 1
+size = Vector2i(500, 400)
+ok_button_text = "Select"
+file_mode = 2
+access = 2
+
+[node name="SavePresetDialog" type="ConfirmationDialog" parent="."]
+title = "Save Preset"
+initial_position = 1
+size = Vector2i(300, 120)
+ok_button_text = "Save"
+
+[node name="VBox" type="VBoxContainer" parent="SavePresetDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 292.0
+offset_bottom = 71.0
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="SavePresetDialog/VBox"]
+layout_mode = 2
+text = "Preset name:"
+
+[node name="PresetNameInput" type="LineEdit" parent="SavePresetDialog/VBox"]
+layout_mode = 2
+placeholder_text = "My Preset"
+
+[node name="PresetsDialog" type="AcceptDialog" parent="."]
+title = "Manage Presets"
+initial_position = 1
+size = Vector2i(420, 380)
+ok_button_text = "Close"
+
+[node name="Margin" type="MarginContainer" parent="PresetsDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 412.0
+offset_bottom = 331.0
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Scroll" type="ScrollContainer" parent="PresetsDialog/Margin"]
+layout_mode = 2
+
+[node name="PresetsList" type="VBoxContainer" parent="PresetsDialog/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "Confirm"
+initial_position = 1
+size = Vector2i(340, 100)

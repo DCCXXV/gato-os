@@ -1,0 +1,30 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Gato Carpetas"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.5", "Forward Plus")
+boot_splash/bg_color=Color(0.0196078, 0.0745098, 0.0823529, 1)
+boot_splash/show_image=false
+boot_splash/fullsize=false
+boot_splash/use_filter=false
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=500
+window/size/transparent=true
+window/per_pixel_transparency/allowed=true
+
+[rendering]
+
+viewport/transparent_background=true

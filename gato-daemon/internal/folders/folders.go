@@ -127,6 +127,7 @@ func (m *Manager) AddFolder(path, action, command string, extensions []string, k
 }
 
 // RemoveAction removes a specific action from a folder
+// If command is provided, matches by command. If action is provided, matches by action.
 func (m *Manager) RemoveAction(path, action, command string) error {
 	if strings.HasPrefix(path, "~/") {
 		homeDir, _ := os.UserHomeDir()
@@ -134,7 +135,15 @@ func (m *Manager) RemoveAction(path, action, command string) error {
 	}
 
 	for i, f := range m.config.Folders {
-		if f.Path == path && f.Action == action && f.Command == command {
+		if f.Path != path {
+			continue
+		}
+		// Match by command if provided, otherwise by action
+		if command != "" && f.Command == command {
+			m.config.Folders = append(m.config.Folders[:i], m.config.Folders[i+1:]...)
+			return m.SaveConfig()
+		}
+		if action != "" && f.Action == action && command == "" {
 			m.config.Folders = append(m.config.Folders[:i], m.config.Folders[i+1:]...)
 			return m.SaveConfig()
 		}
